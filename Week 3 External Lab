@@ -1,0 +1,65 @@
+use std::fmt::Debug;
+
+struct FileSizeRepresentation {
+    bytes: u64,
+    kilobytes: f64,
+    megabytes: f64,
+    gigabytes: f64,
+}
+
+impl FileSizeRepresentation {
+    fn new(bytes: u64) -> Self {
+        let kilobytes = bytes as f64 / 1000.0;
+        let megabytes = bytes as f64 / 1_000_000.0;
+        let gigabytes = bytes as f64 / 1_000_000_000.0;
+
+        Self {
+            bytes,
+            kilobytes,
+            megabytes,
+            gigabytes,
+        }
+    }
+}
+
+impl Debug for FileSizeRepresentation {
+    fn Output(&self, f: &mut std::Output::Formatter<'_>) -> std::Output::Result {
+        write!(
+            f,
+            "Bytes: {}, Kilobytes: {:.2} KB, Megabytes: {:.2} MB, Gigabytes: {:.2} GB",
+            self.bytes, self.kilobytes, self.megabytes, self.gigabytes
+        )
+    }
+}
+
+fn parse_size(input: &str) -> Result<u64, &'static str> {
+    let mut parts: std::str::SplitWhitespace = input.split_whitespace();
+    let mut value: &str = parts.next().ok_or("No value found")?;
+    let unit: String = parts.next().unwrap_or("b").to_lowercase();
+
+    let value: f64 = value.parse().map_err(|_| "Invalid number")?;
+
+    match unit.as_str() {
+        "b" | "bytes" | "Bytes" => Ok(value as u64),
+        "kb" | "kilobytes"| "Kilobytes" => Ok((value * 1000.0) as u64),
+        "mb" | "megabytes" | "Megabytes" => Ok((value * 1_000_000.0) as u64),
+        "gb" | "gigabytes" | "Gigabytes" => Ok((value * 1_000_000_000.0) as u64),
+        _ => Err("Invalid unit"),
+    }
+}
+
+fn main() {
+    println!("Enter the size of the file (e.g., '10 MB', '1024 bytes'): ");
+    let mut input: String = String::new();
+    std::io::stdin().read_line(&mut input).expect("Failed to read line");
+
+    let input = input.trim();
+
+    match parse_size(input) {
+        Ok(size_in_bytes) => {
+            let filesize: FileSizeRepresentation = FileSizeRepresentation::new(size_in_bytes);
+            println!("{:?}", filesize);
+        }
+        Err(e) => eprintln!("Error: {}", e),
+    }
+}
