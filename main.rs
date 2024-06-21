@@ -1,4 +1,4 @@
-
+// Week 3 External Lab: Create a File Size formatter
 use std::fmt::Debug;
 
 struct FileSizeRepresentation {
